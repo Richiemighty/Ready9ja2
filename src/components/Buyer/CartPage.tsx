@@ -166,7 +166,9 @@ const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="pb-24 bg-gray-50 min-h-screen">
+    <div className="pb-36 bg-gray-50 min-h-screen">
+      {/* ↑↑ increased from pb-24 to pb-36 to avoid overlap with MobileBottomNav */}
+
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="flex items-center justify-between p-4">
@@ -222,7 +224,8 @@ const CartPage: React.FC = () => {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
+      {/* Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-sm text-gray-600">Total</p>
@@ -239,6 +242,9 @@ const CartPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+
+      
     </div>
   );
 };
