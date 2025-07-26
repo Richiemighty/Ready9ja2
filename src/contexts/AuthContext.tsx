@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  User as FirebaseUser, 
-  onAuthStateChanged, 
+import {
+  User as FirebaseUser,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -18,6 +18,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: Partial<User>) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,9 +36,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUserProfile = async () => {
+    if (!currentUser) return;
+    try {
+      const profileRef = doc(db, 'profiles', currentUser.uid);
+      const profileSnap = await getDoc(profileRef);
+      if (profileSnap.exists()) {
+        setUserProfile(profileSnap.data() as User);
+      }
+    } catch (error) {
+      console.error('Error refreshing user profile:', error);
+    }
+  };
+
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    
+
     await updateProfile(user, {
       displayName: userData.displayName
     });
@@ -59,46 +73,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserProfile(userDoc);
   };
 
-  const signIn = async (email: string, password: string) => {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result;
+  const signIn = async (email: string, password: string): Promise<void> => {
+    await signInWithEmailAndPassword(auth, email, password);
+    // User state will automatically update via onAuthStateChanged
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     await firebaseSignOut(auth);
     setUserProfile(null);
+    setCurrentUser(null);
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
-      
+
       if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, 'profiles', user.uid));
-          if (userDoc.exists()) {
-            setUserProfile(userDoc.data() as User);
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
+        await refreshUserProfile();
       } else {
         setUserProfile(null);
       }
-      
+
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
-  const value = {
+  const value: AuthContextType = {
     currentUser,
     userProfile,
     loading,
     signIn,
     signUp,
-    signOut
+    signOut,
+    refreshUserProfile
   };
 
   return (

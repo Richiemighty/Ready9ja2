@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
   User, 
@@ -16,17 +16,33 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { toast } from 'react-toastify';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { userProfile, signOut } = useAuth();
+  const { currentUser, userProfile, signOut, refreshUserProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    displayName: userProfile?.displayName || '',
-    email: userProfile?.email || '',
-    phoneNumber: userProfile?.phoneNumber || '',
-    address: userProfile?.address || ''
+    displayName: '',
+    email: '',
+    phoneNumber: '',
+    address: ''
   });
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize form data with user profile
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        displayName: userProfile.displayName || '',
+        email: userProfile.email || '',
+        phoneNumber: userProfile.phoneNumber || '',
+        address: userProfile.address || ''
+      });
+    }
+  }, [userProfile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -35,9 +51,30 @@ const ProfilePage: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Save profile changes
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!currentUser) return;
+
+    setIsSaving(true);
+    try {
+      const userRef = doc(db, 'profiles', currentUser.uid);
+      await updateDoc(userRef, {
+        displayName: formData.displayName,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        updatedAt: new Date()
+      });
+
+      // Refresh user profile data
+      await refreshUserProfile();
+      
+      toast.success('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -46,6 +83,7 @@ const ProfilePage: React.FC = () => {
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
+      toast.error('Failed to sign out. Please try again.');
     }
   };
 
@@ -158,23 +196,11 @@ const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
-              {isEditing ? (
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                  <Mail className="w-4 h-4 text-gray-400 mr-3" />
-                  <span className="text-gray-900">{userProfile?.email}</span>
-                </div>
-              )}
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                <Mail className="w-4 h-4 text-gray-400 mr-3" />
+                <span className="text-gray-900">{userProfile?.email}</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
             </div>
 
             <div>
@@ -228,20 +254,31 @@ const ProfilePage: React.FC = () => {
                 <button
                   onClick={() => setIsEditing(false)}
                   className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium"
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg font-medium"
+                  className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-lg font-medium flex items-center justify-center"
+                  disabled={isSaving}
                 >
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : 'Save Changes'}
                 </button>
               </div>
             )}
           </div>
         </div>
 
+        {/* Rest of your component remains the same */}
         {/* Menu Items */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {menuItems.map((item, index) => (

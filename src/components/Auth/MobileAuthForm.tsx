@@ -1,3 +1,5 @@
+// src/Auth/MobileAuthForm.tsx
+
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';

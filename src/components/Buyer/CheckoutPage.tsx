@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Clock, 
-  CreditCard, 
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  CreditCard,
   Shield,
   Truck,
   User,
   Phone
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { userProfile } = useAuth();
+
   const [deliveryType, setDeliveryType] = useState('standard');
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [loading, setLoading] = useState(false);
-  
+
   const [deliveryInfo, setDeliveryInfo] = useState({
     fullName: userProfile?.displayName || '',
     phone: userProfile?.phoneNumber || '',
@@ -26,17 +28,17 @@ const CheckoutPage: React.FC = () => {
     instructions: ''
   });
 
-  const orderTotal = 47000; // This would come from cart context
+  // ⬇️ Get total from route state or fallback to 0
+  const orderTotal = location.state?.orderTotal ?? 0;
   const deliveryFee = deliveryType === 'express' ? 1500 : 500;
   const finalTotal = orderTotal + deliveryFee;
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       minimumFractionDigits: 0
     }).format(price);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setDeliveryInfo(prev => ({
@@ -47,7 +49,6 @@ const CheckoutPage: React.FC = () => {
 
   const handlePlaceOrder = async () => {
     setLoading(true);
-    // Simulate payment processing
     setTimeout(() => {
       setLoading(false);
       navigate('/order-tracking/ORD-2025-001');
@@ -102,7 +103,7 @@ const CheckoutPage: React.FC = () => {
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Delivery Information */}
+        {/* Delivery Info */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center mb-4">
             <MapPin className="w-5 h-5 text-purple-600 mr-2" />
@@ -112,9 +113,7 @@ const CheckoutPage: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -128,9 +127,7 @@ const CheckoutPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
@@ -146,9 +143,7 @@ const CheckoutPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address</label>
               <textarea
                 name="address"
                 value={deliveryInfo.address}
@@ -160,9 +155,7 @@ const CheckoutPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Instructions (Optional)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Instructions (Optional)</label>
               <textarea
                 name="instructions"
                 value={deliveryInfo.instructions}
@@ -178,7 +171,6 @@ const CheckoutPage: React.FC = () => {
         {/* Delivery Options */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4">Delivery Options</h3>
-          
           <div className="space-y-3">
             {deliveryOptions.map((option) => (
               <label
@@ -197,14 +189,18 @@ const CheckoutPage: React.FC = () => {
                   onChange={(e) => setDeliveryType(e.target.value)}
                   className="sr-only"
                 />
-                <option.icon className={`w-5 h-5 mr-3 ${
-                  deliveryType === option.id ? 'text-purple-600' : 'text-gray-400'
-                }`} />
+                <option.icon
+                  className={`w-5 h-5 mr-3 ${
+                    deliveryType === option.id ? 'text-purple-600' : 'text-gray-400'
+                  }`}
+                />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <span className={`font-medium ${
-                      deliveryType === option.id ? 'text-purple-900' : 'text-gray-900'
-                    }`}>
+                    <span
+                      className={`font-medium ${
+                        deliveryType === option.id ? 'text-purple-900' : 'text-gray-900'
+                      }`}
+                    >
                       {option.name}
                     </span>
                     <span className="font-semibold text-purple-600">
@@ -221,7 +217,6 @@ const CheckoutPage: React.FC = () => {
         {/* Payment Method */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4">Payment Method</h3>
-          
           <div className="space-y-3">
             {paymentMethods.map((method) => (
               <label
@@ -240,13 +235,17 @@ const CheckoutPage: React.FC = () => {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   className="sr-only"
                 />
-                <method.icon className={`w-5 h-5 mr-3 ${
-                  paymentMethod === method.id ? 'text-purple-600' : 'text-gray-400'
-                }`} />
+                <method.icon
+                  className={`w-5 h-5 mr-3 ${
+                    paymentMethod === method.id ? 'text-purple-600' : 'text-gray-400'
+                  }`}
+                />
                 <div>
-                  <div className={`font-medium ${
-                    paymentMethod === method.id ? 'text-purple-900' : 'text-gray-900'
-                  }`}>
+                  <div
+                    className={`font-medium ${
+                      paymentMethod === method.id ? 'text-purple-900' : 'text-gray-900'
+                    }`}
+                  >
                     {method.name}
                   </div>
                   <p className="text-sm text-gray-600">{method.description}</p>
@@ -259,7 +258,6 @@ const CheckoutPage: React.FC = () => {
         {/* Order Summary */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4">Order Summary</h3>
-          
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal</span>
@@ -281,8 +279,8 @@ const CheckoutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
+      {/* Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
         <button
           onClick={handlePlaceOrder}
           disabled={loading || !deliveryInfo.fullName || !deliveryInfo.phone || !deliveryInfo.address}
@@ -295,7 +293,6 @@ const CheckoutPage: React.FC = () => {
           )}
           {loading ? 'Processing...' : `Pay ${formatPrice(finalTotal)}`}
         </button>
-        
         <div className="flex items-center justify-center mt-2 text-xs text-gray-500">
           <Shield className="w-3 h-3 mr-1" />
           Secured by 256-bit SSL encryption

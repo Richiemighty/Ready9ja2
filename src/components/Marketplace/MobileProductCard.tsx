@@ -1,11 +1,13 @@
+// src/components/Marketplace/MobileProductCard.tsx
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Star, ShoppingCart } from 'lucide-react';
 import { Product } from '../../types';
+import { useCart } from '../../contexts/CartContext';
 
 interface MobileProductCardProps {
   product: Product;
-  onAddToCart?: (product: Product) => void;
   onToggleFavorite?: (productId: string) => void;
   onChat?: (sellerId: string, productId: string) => void;
   isFavorite?: boolean;
@@ -13,11 +15,12 @@ interface MobileProductCardProps {
 
 const MobileProductCard: React.FC<MobileProductCardProps> = ({
   product,
-  onAddToCart,
   onToggleFavorite,
   onChat,
   isFavorite = false
 }) => {
+  const { addToCart } = useCart();
+
   const formatPrice = (price: number, currency: string) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -26,9 +29,14 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
     }).format(price);
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddToCart?.(product);
+    try {
+      await addToCart(product);
+      console.log('Product added to cart:', product);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    }
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {

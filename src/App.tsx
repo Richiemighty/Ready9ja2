@@ -18,6 +18,8 @@ import ConversationsPage from './components/Buyer/ConversationsPage';
 import ReferralsPage from './components/Buyer/ReferralsPage';
 import ProfilePage from './components/Buyer/ProfilePage';
 import Landing from "./Landing";
+import { CartProvider } from './contexts/CartContext';
+
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ 
@@ -119,7 +121,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
       </AuthProvider>
     </Router>
   );

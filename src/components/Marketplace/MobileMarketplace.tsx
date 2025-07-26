@@ -214,7 +214,7 @@ const MobileMarketplace: React.FC = () => {
               >
                 <MobileProductCard
                   product={product}
-                  onAddToCart={(product) => console.log('Add to cart:', product)}
+                  // onAddToCart={(product) => console.log('Add to cart:', product)}
                   onToggleFavorite={(productId) => console.log('Toggle favorite:', productId)}
                   onChat={(sellerId, productId) => console.log('Chat with seller:', sellerId, productId)}
                 />
