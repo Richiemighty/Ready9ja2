@@ -1,7 +1,8 @@
+// src/App.tsx 
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-// import MobileHeader from './components/Layout/MobileHeader';
 import MobileBottomNav from './components/Layout/MobileBottomNav';
 import MobileHero from './components/Home/MobileHero';
 import MobileAuthForm from './components/Auth/MobileAuthForm';
@@ -20,13 +21,16 @@ import ProfilePage from './components/Buyer/ProfilePage';
 import Landing from "./Landing";
 import { CartProvider } from './contexts/CartContext';
 
-
 // Protected Route Component
 const ProtectedRoute: React.FC<{ 
   children: React.ReactNode; 
   allowedRoles?: ('buyer' | 'seller' | 'admin')[] 
 }> = ({ children, allowedRoles }) => {
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, loading } = useAuth();
+
+  if (loading) {
+    return <div className="text-center py-10">Loading...</div>;
+  }
 
   if (!currentUser) {
     return <Navigate to="/auth?mode=signin" replace />;
@@ -41,11 +45,14 @@ const ProtectedRoute: React.FC<{
 
 // Main App Content
 const AppContent: React.FC = () => {
-  const { userProfile, currentUser } = useAuth();
+  const { userProfile, currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div className="text-center py-10">Loading user session...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 max-w-md mx-auto relative">
-
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
@@ -53,13 +60,22 @@ const AppContent: React.FC = () => {
         <Route 
           path="/dashboard" 
           element={
-            currentUser && userProfile?.role === 'buyer' ? (
-              <Navigate to="/buyer/dashboard" replace />
-            ) : currentUser && userProfile?.role === 'seller' ? (
-              <Navigate to="/seller/dashboard" replace />
-            ) : <MobileHero />
+            currentUser && userProfile ? (
+              userProfile.role === 'buyer' ? (
+                <Navigate to="/buyer/dashboard" replace />
+              ) : userProfile.role === 'seller' ? (
+                <Navigate to="/seller/dashboard" replace />
+              ) : userProfile.role === 'admin' ? (
+                <Navigate to="/admin" replace />
+              ) : (
+                <MobileHero />
+              )
+            ) : (
+              <MobileHero />
+            )
           } 
         />
+
         <Route path="/auth" element={<MobileAuthForm />} />
         <Route path="/marketplace" element={<MobileMarketplace />} />
         <Route path="/product/:id" element={<MobileProductDetails />} />
@@ -89,34 +105,87 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/cart" element={<ProtectedRoute allowedRoles={['buyer']}><CartPage /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute allowedRoles={['buyer']}><CheckoutPage /></ProtectedRoute>} />
-        <Route path="/order-tracking/:orderId" element={<ProtectedRoute><OrderTrackingPage /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><OrdersHistoryPage /></ProtectedRoute>} />
-        <Route path="/messages" element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
-        <Route path="/referrals" element={<ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/favorites" element={
-          <ProtectedRoute allowedRoles={['buyer']}>
-            <div className="pb-20 p-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h1 className="text-xl font-bold text-gray-900 mb-4">Favorites</h1>
-                <p className="text-gray-600">Favorites functionality coming soon...</p>
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order-tracking/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderTrackingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrdersHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <ConversationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/referrals"
+          element={
+            <ProtectedRoute>
+              <ReferralsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <div className="pb-20 p-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h1 className="text-xl font-bold text-gray-900 mb-4">Favorites</h1>
+                  <p className="text-gray-600">Favorites functionality coming soon...</p>
+                </div>
               </div>
-            </div>
-          </ProtectedRoute>
-        } />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* ✅ Only show MobileBottomNav if signed in */}
+      {/* ✅ Bottom Navigation for signed-in users */}
       {currentUser && <MobileBottomNav />}
     </div>
   );
 };
 
-
-// Main App Component
+// Main App Wrapper
 const App: React.FC = () => {
   return (
     <Router>

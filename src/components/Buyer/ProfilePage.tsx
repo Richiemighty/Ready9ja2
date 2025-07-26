@@ -1,3 +1,4 @@
+// src/compinents/Buyer/ProfilePage.tsx 
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, 
@@ -32,7 +33,6 @@ const ProfilePage: React.FC = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize form data with user profile
   useEffect(() => {
     if (userProfile) {
       setFormData({
@@ -64,9 +64,7 @@ const ProfilePage: React.FC = () => {
         updatedAt: new Date()
       });
 
-      // Refresh user profile data
       await refreshUserProfile();
-      
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
@@ -278,7 +276,6 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Rest of your component remains the same */}
         {/* Menu Items */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {menuItems.map((item, index) => (
