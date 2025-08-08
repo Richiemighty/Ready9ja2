@@ -1,27 +1,28 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // import this
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { FaStore } from "react-icons/fa";
-import { useAuth } from "./contexts/AuthContext"; // import auth context
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "./contexts/AuthContext";
 
 const Landing = () => {
   const [showLogin, setShowLogin] = useState(false);
   const { currentUser, userProfile } = useAuth();
-  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const fadeAnim = new Animated.Value(0);
+  const scaleAnim = new Animated.Value(0.8);
 
-  // 🔁 Redirect if user is already signed in
+  // Redirect if user is already signed in
   useEffect(() => {
     if (currentUser && userProfile) {
       if (userProfile.role === 'buyer') {
-        navigate("/buyer/dashboard");
+        navigation.navigate('BuyerTabs' as never);
       } else if (userProfile.role === 'seller') {
-        navigate("/seller/dashboard");
+        navigation.navigate('SellerDashboard' as never);
       } else if (userProfile.role === 'admin') {
-        navigate("/admin");
+        navigation.navigate('AdminDashboard' as never);
       }
     }
-  }, [currentUser, userProfile, navigate]);
+  }, [currentUser, userProfile, navigation]);
 
   // Show login/register after 3 seconds
   useEffect(() => {
@@ -29,58 +30,150 @@ const Landing = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-800 via-purple-900 to-indigo-950 px-4 text-white relative overflow-hidden">
+    <View style={styles.container}>
       {!showLogin ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 2 }}
-          className="flex flex-col items-center space-y-5 text-center"
+        <Animated.View 
+          style={[
+            styles.logoContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }]
+            }
+          ]}
         >
-          <FaStore className="text-7xl text-yellow-400 drop-shadow-xl" />
-          <h1 className="text-5xl font-extrabold">
-            <span className="text-white">Ready</span>
-            <span className="text-yellow-400">9ja</span>
-          </h1>
-          <p className="text-sm font-light tracking-wide text-gray-200">
-            Your Trusted Marketplace
-          </p>
-        </motion.div>
+          <Ionicons name="storefront" size={80} color="#fbbf24" />
+          <Text style={styles.logoText}>
+            <Text style={styles.logoTextWhite}>Ready</Text>
+            <Text style={styles.logoTextYellow}>9ja</Text>
+          </Text>
+          <Text style={styles.tagline}>Your Trusted Marketplace</Text>
+        </Animated.View>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="bg-white text-gray-800 p-10 rounded-3xl shadow-2xl w-full max-w-sm"
-        >
-          <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
-            Welcome to Ready9ja
-          </h2>
+        <Animated.View style={[styles.loginContainer, { opacity: fadeAnim }]}>
+          <Text style={styles.welcomeTitle}>Welcome to Ready9ja</Text>
 
-          <div className="space-y-4">
-            <Link
-              to="/auth"
-              className="block w-full text-center bg-purple-700 text-white py-3 rounded-xl font-semibold hover:bg-purple-800 transition-all duration-300"
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={() => navigation.navigate('Auth' as never, { mode: 'signin' } as never)}
             >
-              Login
-            </Link>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
 
-            <Link
-              to="/auth?mode=signup"
-              className="block w-full text-center border border-purple-600 text-purple-700 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-all duration-300"
+            <TouchableOpacity
+              style={styles.registerButton}
+              onPress={() => navigation.navigate('Auth' as never, { mode: 'signup' } as never)}
             >
-              Register
-            </Link>
-          </div>
+              <Text style={styles.registerButtonText}>Register</Text>
+            </TouchableOpacity>
+          </View>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Powered by <span className="font-semibold text-purple-700">Ready9ja</span>
-          </p>
-        </motion.div>
+          <Text style={styles.poweredBy}>
+            Powered by <Text style={styles.brandText}>Ready9ja</Text>
+          </Text>
+        </Animated.View>
       )}
-    </div>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 16,
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+  logoTextWhite: {
+    color: 'white',
+  },
+  logoTextYellow: {
+    color: '#fbbf24',
+  },
+  tagline: {
+    fontSize: 14,
+    color: '#e5e7eb',
+    marginTop: 8,
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  loginContainer: {
+    backgroundColor: 'white',
+    padding: 40,
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#7c3aed',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    gap: 16,
+  },
+  loginButton: {
+    backgroundColor: '#7c3aed',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  loginButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  registerButton: {
+    borderWidth: 1,
+    borderColor: '#7c3aed',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: '#7c3aed',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  poweredBy: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 24,
+    textAlign: 'center',
+  },
+  brandText: {
+    fontWeight: '600',
+    color: '#7c3aed',
+  },
+});
 
 export default Landing;

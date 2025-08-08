@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
 import { 
-  Search, 
-  Filter, 
-  Heart, 
-  ShoppingCart, 
-  TrendingUp,
-  Star,
-  MapPin,
-  Clock,
-  Gift
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+  View, 
+  Text, 
+  ScrollView, 
+  TouchableOpacity, 
+  StyleSheet, 
+  TextInput,
+  ActivityIndicator 
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useProducts } from '../../hooks/useProducts';
 import { useAuth } from '../../contexts/AuthContext';
 import MobileProductCard from '../Marketplace/MobileProductCard';
 
 const BuyerDashboard: React.FC = () => {
-  const navigate = useNavigate();
+  const navigation = useNavigation();
   const { userProfile } = useAuth();
   const { products, loading } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -37,169 +36,394 @@ const BuyerDashboard: React.FC = () => {
     : products.filter(p => p.category === selectedCategory);
 
   const quickActions = [
-    { icon: ShoppingCart, label: 'My Cart', path: '/cart', color: 'bg-blue-500' },
-    { icon: Heart, label: 'Favorites', path: '/favorites', color: 'bg-red-500' },
-    { icon: Clock, label: 'Orders', path: '/orders', color: 'bg-green-500' },
-    { icon: Gift, label: 'Referrals', path: '/referrals', color: 'bg-purple-500' }
+    { icon: 'bag', label: 'My Cart', path: 'Cart', color: '#3b82f6' },
+    { icon: 'heart', label: 'Favorites', path: 'Favorites', color: '#ef4444' },
+    { icon: 'time', label: 'Orders', path: 'Orders', color: '#10b981' },
+    { icon: 'gift', label: 'Referrals', path: 'Referrals', color: '#8b5cf6' }
   ];
 
   return (
-    <div className="pb-20 bg-gray-50">
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white">
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold">
-                Welcome back, {userProfile?.displayName?.split(' ')[0]}! 👋
-              </h1>
-              <p className="text-purple-100 text-sm">Discover amazing products today</p>
-            </div>
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <span className="text-lg font-bold">
-                {userProfile?.displayName?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          </div>
+      <View style={styles.header}>
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeText}>
+            Welcome back, {userProfile?.displayName?.split(' ')[0]}! 👋
+          </Text>
+          <Text style={styles.welcomeSubtext}>Discover amazing products today</Text>
+        </View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {userProfile?.displayName?.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      </View>
 
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search for products..."
-              className="w-full pl-10 pr-4 py-3 bg-white rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-300"
-              onFocus={() => navigate('/marketplace')}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color="#6b7280" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for products..."
+            placeholderTextColor="#6b7280"
+            onFocus={() => navigation.navigate('Browse' as never)}
+          />
+        </View>
+      </View>
 
       {/* Quick Actions */}
-      <div className="px-4 py-6 -mt-4 relative z-10">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <h2 className="font-semibold text-gray-900 mb-3">Quick Actions</h2>
-          <div className="grid grid-cols-4 gap-3">
+      <View style={styles.section}>
+        <View style={styles.quickActionsCard}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickActionsGrid}>
             {quickActions.map((action, index) => (
-              <button
+              <TouchableOpacity
                 key={index}
-                onClick={() => navigate(action.path)}
-                className="flex flex-col items-center p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                style={styles.quickActionItem}
+                onPress={() => navigation.navigate(action.path as never)}
               >
-                <div className={`w-12 h-12 ${action.color} rounded-full flex items-center justify-center mb-2`}>
-                  <action.icon className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xs font-medium text-gray-700">{action.label}</span>
-              </button>
+                <View style={[styles.quickActionIcon, { backgroundColor: action.color }]}>
+                  <Ionicons name={action.icon as any} size={24} color="white" />
+                </View>
+                <Text style={styles.quickActionLabel}>{action.label}</Text>
+              </TouchableOpacity>
             ))}
-          </div>
-        </div>
-      </div>
+          </View>
+        </View>
+      </View>
 
       {/* Categories */}
-      <div className="px-4 mb-6">
-        <h2 className="font-semibold text-gray-900 mb-3">Shop by Category</h2>
-        <div className="flex space-x-3 overflow-x-auto scrollbar-hide">
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Shop by Category</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
           {categories.map((category) => (
-            <button
+            <TouchableOpacity
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex-shrink-0 flex flex-col items-center p-3 rounded-xl border transition-colors ${
-                selectedCategory === category.id
-                  ? 'border-purple-500 bg-purple-50'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
+              style={[
+                styles.categoryItem,
+                selectedCategory === category.id && styles.categoryItemSelected
+              ]}
+              onPress={() => setSelectedCategory(category.id)}
             >
-              <span className="text-2xl mb-1">{category.icon}</span>
-              <span className="text-xs font-medium text-gray-700">{category.name}</span>
-            </button>
+              <Text style={styles.categoryIcon}>{category.icon}</Text>
+              <Text style={[
+                styles.categoryLabel,
+                selectedCategory === category.id && styles.categoryLabelSelected
+              ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
           ))}
-        </div>
-      </div>
+        </ScrollView>
+      </View>
 
       {/* Featured Products */}
-      <div className="px-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900">Featured Products</h2>
-          <button
-            onClick={() => navigate('/marketplace')}
-            className="text-purple-600 text-sm font-medium"
-          >
-            View All
-          </button>
-        </div>
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Featured Products</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Browse' as never)}>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
         
         {loading ? (
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl p-4 animate-pulse">
-                <div className="flex space-x-3">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#7c3aed" />
+          </View>
         ) : (
-          <div className="space-y-3">
+          <View style={styles.productsGrid}>
             {featuredProducts.map(product => (
-              <div key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
-                <MobileProductCard
-                  product={product}
-                  onAddToCart={(product) => console.log('Add to cart:', product)}
-                  onToggleFavorite={(productId) => console.log('Toggle favorite:', productId)}
-                  onChat={(sellerId, productId) => console.log('Chat with seller:', sellerId, productId)}
-                />
-              </div>
+              <View key={product.id} style={styles.productCardContainer}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ProductDetails' as never, { id: product.id } as never)}
+                >
+                  <MobileProductCard
+                    product={product}
+                    onToggleFavorite={(productId) => console.log('Toggle favorite:', productId)}
+                    onChat={(sellerId, productId) => console.log('Chat with seller:', sellerId, productId)}
+                  />
+                </TouchableOpacity>
+              </View>
             ))}
-          </div>
+          </View>
         )}
-      </div>
+      </View>
 
       {/* Trending Section */}
-      <div className="px-4 mb-6">
-        <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl p-4 text-white">
-          <div className="flex items-center mb-2">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            <h3 className="font-semibold">Trending Now</h3>
-          </div>
-          <p className="text-sm opacity-90 mb-3">
+      <View style={styles.section}>
+        <View style={styles.trendingCard}>
+          <View style={styles.trendingHeader}>
+            <Ionicons name="trending-up" size={20} color="white" />
+            <Text style={styles.trendingTitle}>Trending Now</Text>
+          </View>
+          <Text style={styles.trendingSubtext}>
             Don't miss out on the hottest products this week!
-          </p>
-          <button
-            onClick={() => navigate('/marketplace')}
-            className="bg-white text-orange-500 px-4 py-2 rounded-lg text-sm font-medium"
+          </Text>
+          <TouchableOpacity
+            style={styles.trendingButton}
+            onPress={() => navigation.navigate('Browse' as never)}
           >
-            Explore Trending
-          </button>
-        </div>
-      </div>
+            <Text style={styles.trendingButtonText}>Explore Trending</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {/* Referral Banner */}
-      <div className="px-4 mb-6">
-        <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-4 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold mb-1">Earn with Referrals</h3>
-              <p className="text-sm opacity-90">Invite friends and earn bonuses!</p>
-            </div>
-            <Gift className="w-8 h-8 opacity-80" />
-          </div>
-          <button
-            onClick={() => navigate('/referrals')}
-            className="bg-white text-green-500 px-4 py-2 rounded-lg text-sm font-medium mt-3"
+      <View style={styles.section}>
+        <View style={styles.referralCard}>
+          <View style={styles.referralContent}>
+            <View>
+              <Text style={styles.referralTitle}>Earn with Referrals</Text>
+              <Text style={styles.referralSubtext}>Invite friends and earn bonuses!</Text>
+            </View>
+            <Ionicons name="gift" size={32} color="white" style={styles.referralIcon} />
+          </View>
+          <TouchableOpacity
+            style={styles.referralButton}
+            onPress={() => navigation.navigate('Referrals' as never)}
           >
-            Start Earning
-          </button>
-        </div>
-      </div>
-    </div>
+            <Text style={styles.referralButtonText}>Start Earning</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  header: {
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  welcomeContainer: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 4,
+  },
+  welcomeSubtext: {
+    fontSize: 14,
+    color: '#c4b5fd',
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    marginTop: -16,
+    zIndex: 10,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#111827',
+  },
+  section: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: '#7c3aed',
+    fontWeight: '500',
+  },
+  quickActionsCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  quickActionItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  quickActionLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'center',
+  },
+  categoriesScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  categoryItem: {
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginRight: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: 'white',
+    minWidth: 80,
+  },
+  categoryItemSelected: {
+    borderColor: '#7c3aed',
+    backgroundColor: '#f3f4f6',
+  },
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  categoryLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  categoryLabelSelected: {
+    color: '#7c3aed',
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  productCardContainer: {
+    width: '48%',
+    marginBottom: 12,
+  },
+  trendingCard: {
+    backgroundColor: '#f97316',
+    borderRadius: 16,
+    padding: 16,
+  },
+  trendingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  trendingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginLeft: 8,
+  },
+  trendingSubtext: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 12,
+  },
+  trendingButton: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  trendingButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#f97316',
+  },
+  referralCard: {
+    backgroundColor: '#10b981',
+    borderRadius: 16,
+    padding: 16,
+  },
+  referralContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  referralTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginBottom: 4,
+  },
+  referralSubtext: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  referralIcon: {
+    opacity: 0.8,
+  },
+  referralButton: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  referralButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#10b981',
+  },
+});
 
 export default BuyerDashboard;

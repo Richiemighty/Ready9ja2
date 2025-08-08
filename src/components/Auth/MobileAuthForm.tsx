@@ -1,13 +1,23 @@
-// src/components/Auth/MobileAuthForm.tsx
 import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ScrollView, 
+  Alert,
+  ActivityIndicator 
+} from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Store, Shield, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const MobileAuthForm: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get('mode') || 'signin';
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const route = useRoute();
+  const params = route.params as { mode?: string; redirect?: string } || {};
+  const initialMode = params.mode || 'signin';
+  const redirect = params.redirect || 'BuyerTabs';
   const [isSignIn, setIsSignIn] = useState(initialMode === 'signin');
 
   const [formData, setFormData] = useState({
@@ -22,23 +32,20 @@ const MobileAuthForm: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const { currentUser, userProfile, signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  const navigation = useNavigation();
 
   // Redirect if already logged in
   useEffect(() => {
     if (currentUser && userProfile) {
       console.log('Redirecting to:', redirect);
-      navigate(redirect, { replace: true });
+      navigation.navigate(redirect as never);
     }
-  }, [currentUser, userProfile, navigate, redirect]);
+  }, [currentUser, userProfile, navigation, redirect]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
-    setError('');
 
     try {
       if (isSignIn) {
@@ -54,239 +61,331 @@ const MobileAuthForm: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Authentication error:', err);
-      setError(err.message || 'An error occurred during authentication');
+      Alert.alert('Error', err.message || 'An error occurred during authentication');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const roles = [
-    { value: 'buyer', label: 'Buyer', icon: User, description: 'Purchase products' },
-    { value: 'seller', label: 'Seller', icon: Store, description: 'Sell your products' },
-    { value: 'admin', label: 'Admin', icon: Shield, description: 'Manage platform' }
+    { value: 'buyer', label: 'Buyer', icon: 'person', description: 'Purchase products' },
+    { value: 'seller', label: 'Seller', icon: 'storefront', description: 'Sell your products' },
+    { value: 'admin', label: 'Admin', icon: 'shield', description: 'Manage platform' }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="flex items-center p-4">
-          <button
-            onClick={() => navigate('/')}
-            className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900 ml-2">
-            {isSignIn ? 'Welcome back' : 'Create Account'}
-          </h1>
-        </div>
-      </div>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#6b7280" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {isSignIn ? 'Welcome back' : 'Create Account'}
+        </Text>
+      </View>
+
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logoIcon}>
+          <Ionicons name="storefront" size={32} color="white" />
+        </View>
+        <Text style={styles.logoSubtitle}>
+          {isSignIn
+            ? 'Sign in to your account'
+            : 'Join thousands of users on Ready9ja'}
+        </Text>
+      </View>
 
       {/* Form */}
-      <div className="p-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          {/* Logo */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <Store className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-gray-600 text-sm">
-              {isSignIn
-                ? 'Sign in to your account'
-                : 'Join thousands of users on Ready9ja'}
-            </p>
-          </div>
+      <View style={styles.formContainer}>
+        {/* Email */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.email}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter your email"
+        {/* Password */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={formData.password}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+              placeholder="Enter your password"
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeButton}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off' : 'eye'} 
+                size={20} 
+                color="#6b7280" 
               />
-            </div>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  minLength={6}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-12"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
+        {/* Sign Up Specific Fields */}
+        {!isSignIn && (
+          <>
+            {/* Full Name */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Full Name</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.displayName}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, displayName: text }))}
+                placeholder="Enter your full name"
+              />
+            </View>
 
-            {/* Sign Up Specific Fields */}
-            {!isSignIn && (
-              <>
-                {/* Full Name */}
-                <div>
-                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    id="displayName"
-                    name="displayName"
-                    type="text"
-                    required
-                    value={formData.displayName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-
-                {/* Role */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Account Type</label>
-                  <div className="space-y-3">
-                    {roles.map((role) => (
-                      <label
-                        key={role.value}
-                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${
-                          formData.role === role.value
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-300 hover:border-purple-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="role"
-                          value={role.value}
-                          checked={formData.role === role.value}
-                          onChange={handleInputChange}
-                          className="sr-only"
-                          required
-                        />
-                        <role.icon
-                          className={`w-5 h-5 mr-3 ${
-                            formData.role === role.value ? 'text-purple-600' : 'text-gray-400'
-                          }`}
-                        />
-                        <div>
-                          <div className={`font-medium text-sm ${
-                            formData.role === role.value ? 'text-purple-900' : 'text-gray-900'
-                          }`}>
-                            {role.label}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {role.description}
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="tel"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter your phone number"
-                  />
-                </div>
-
-                {/* Business Name (only for sellers) */}
-                {formData.role === 'seller' && (
-                  <div>
-                    <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Business Name
-                    </label>
-                    <input
-                      id="businessName"
-                      name="businessName"
-                      type="text"
-                      value={formData.businessName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="Enter your business name"
-                      required={formData.role === 'seller'}
+            {/* Role */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Account Type</Text>
+              <View style={styles.roleContainer}>
+                {roles.map((role) => (
+                  <TouchableOpacity
+                    key={role.value}
+                    style={[
+                      styles.roleOption,
+                      formData.role === role.value && styles.roleOptionSelected
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, role: role.value as any }))}
+                  >
+                    <Ionicons
+                      name={role.icon as any}
+                      size={20}
+                      color={formData.role === role.value ? '#7c3aed' : '#6b7280'}
                     />
-                  </div>
-                )}
-              </>
+                    <View style={styles.roleText}>
+                      <Text style={[
+                        styles.roleLabel,
+                        formData.role === role.value && styles.roleLabelSelected
+                      ]}>
+                        {role.label}
+                      </Text>
+                      <Text style={styles.roleDescription}>{role.description}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Phone */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.phoneNumber}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, phoneNumber: text }))}
+                placeholder="Enter your phone number"
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            {/* Business Name (only for sellers) */}
+            {formData.role === 'seller' && (
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Business Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.businessName}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, businessName: text }))}
+                  placeholder="Enter your business name"
+                />
+              </View>
             )}
+          </>
+        )}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-3 px-4 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 transition"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isSignIn ? 'Sign In' : 'Create Account'}
-            </button>
-          </form>
+        {/* Submit */}
+        <TouchableOpacity
+          style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.submitButtonText}>
+              {isSignIn ? 'Sign In' : 'Create Account'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
 
-          {/* Toggle Mode */}
-          <div className="text-center mt-6">
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignIn(!isSignIn);
-                setError('');
-              }}
-              className="text-sm text-purple-600 hover:text-purple-800 transition"
-            >
-              {isSignIn
-                ? "Don't have an account? Sign up"
-                : 'Already have an account? Sign in'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Toggle Mode */}
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity
+          onPress={() => setIsSignIn(!isSignIn)}
+        >
+          <Text style={styles.toggleText}>
+            {isSignIn
+              ? "Don't have an account? Sign up"
+              : 'Already have an account? Sign in'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  contentContainer: {
+    paddingBottom: 80,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginLeft: 8,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  logoIcon: {
+    width: 64,
+    height: 64,
+    backgroundColor: '#7c3aed',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  logoSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  formContainer: {
+    backgroundColor: 'white',
+    marginHorizontal: 16,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 14,
+  },
+  eyeButton: {
+    padding: 12,
+  },
+  roleContainer: {
+    gap: 12,
+  },
+  roleOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+  },
+  roleOptionSelected: {
+    borderColor: '#7c3aed',
+    backgroundColor: '#f3f4f6',
+  },
+  roleText: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  roleLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#111827',
+  },
+  roleLabelSelected: {
+    color: '#7c3aed',
+  },
+  roleDescription: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  submitButton: {
+    backgroundColor: '#7c3aed',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  toggleContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  toggleText: {
+    fontSize: 14,
+    color: '#7c3aed',
+  },
+});
 
 export default MobileAuthForm;

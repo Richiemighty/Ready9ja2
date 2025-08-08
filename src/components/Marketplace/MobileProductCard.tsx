@@ -1,8 +1,6 @@
-// src/components/Marketplace/MobileProductCard.tsx
-
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Star, ShoppingCart } from 'lucide-react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../types';
 import { useCart } from '../../contexts/CartContext';
 
@@ -29,8 +27,7 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
     }).format(price);
   };
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleAddToCart = async () => {
     try {
       await addToCart(product);
       console.log('Product added to cart:', product);
@@ -39,114 +36,248 @@ const MobileProductCard: React.FC<MobileProductCardProps> = ({
     }
   };
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleFavorite = () => {
     onToggleFavorite?.(product.id);
   };
 
-  const handleChat = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleChat = () => {
     onChat?.(product.sellerId, product.id);
   };
 
   return (
-    <motion.div 
-      className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden"
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <div className="flex flex-col h-full">
-        {/* Product Image */}
-        <div className="relative aspect-square">
-          <img
-            src={product.images[0] || 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg'}
-            alt={product.name}
-            className="w-full h-full object-cover"
+    <View style={styles.container}>
+      {/* Product Image */}
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: product.images[0] || 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg' }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        
+        {/* Favorite Button */}
+        <TouchableOpacity
+          onPress={handleToggleFavorite}
+          style={styles.favoriteButton}
+        >
+          <Ionicons 
+            name={isFavorite ? 'heart' : 'heart-outline'} 
+            size={16} 
+            color={isFavorite ? '#ef4444' : '#6b7280'} 
           />
-          
-          {/* Favorite Button */}
-          <button
-            onClick={handleToggleFavorite}
-            className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full backdrop-blur-sm"
-          >
-            <Heart 
-              className={`w-4 h-4 ${
-                isFavorite ? 'text-red-500 fill-current' : 'text-gray-600'
-              }`} 
-            />
-          </button>
+        </TouchableOpacity>
 
-          {/* Stock Status */}
-          <div className="absolute bottom-2 left-2">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-              product.available && product.stock > 0
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
-            }`}>
-              {product.available && product.stock > 0 ? `${product.stock} left` : 'Out of stock'}
-            </span>
-          </div>
-        </div>
+        {/* Stock Status */}
+        <View style={styles.stockBadge}>
+          <Text style={[
+            styles.stockText,
+            product.available && product.stock > 0 ? styles.stockTextGreen : styles.stockTextRed
+          ]}>
+            {product.available && product.stock > 0 ? `${product.stock} left` : 'Out of stock'}
+          </Text>
+        </View>
+      </View>
 
-        {/* Product Details */}
-        <div className="p-3 flex flex-col flex-grow">
-          <div className="mb-1">
-            <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-tight">
-              {product.name}
-            </h3>
-            <p className="text-xs text-gray-500 line-clamp-2 mt-1">
-              {product.category}
-            </p>
-          </div>
+      {/* Product Details */}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.productName} numberOfLines={2}>
+          {product.name}
+        </Text>
+        <Text style={styles.category} numberOfLines={1}>
+          {product.category}
+        </Text>
 
-          {/* Price and Rating */}
-          <div className="mt-auto">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-base font-bold text-purple-600">
-                {formatPrice(product.price, product.currency)}
-              </span>
-              <div className="flex items-center space-x-1">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-xs font-medium text-gray-700">
-                  {product.sellerRating.toFixed(1)}
-                </span>
-              </div>
-            </div>
+        {/* Price and Rating */}
+        <View style={styles.priceRatingContainer}>
+          <Text style={styles.price}>
+            {formatPrice(product.price, product.currency)}
+          </Text>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={12} color="#fbbf24" />
+            <Text style={styles.rating}>
+              {product.sellerRating.toFixed(1)}
+            </Text>
+          </View>
+        </View>
 
-            {/* Seller Info and Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-purple-800 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">
-                    {product.sellerName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-700 truncate max-w-[80px]">
-                  {product.sellerName}
-                </span>
-              </div>
+        {/* Seller Info and Actions */}
+        <View style={styles.bottomContainer}>
+          <View style={styles.sellerContainer}>
+            <View style={styles.sellerAvatar}>
+              <Text style={styles.sellerAvatarText}>
+                {product.sellerName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text style={styles.sellerName} numberOfLines={1}>
+              {product.sellerName}
+            </Text>
+          </View>
 
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleChat}
-                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.available || product.stock === 0}
-                  className="p-1.5 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              onPress={handleChat}
+              style={styles.chatButton}
+            >
+              <Ionicons name="chatbubble-outline" size={16} color="#3b82f6" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleAddToCart}
+              disabled={!product.available || product.stock === 0}
+              style={[
+                styles.cartButton,
+                (!product.available || product.stock === 0) && styles.cartButtonDisabled
+              ]}
+            >
+              <Ionicons name="bag-add" size={16} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  imageContainer: {
+    position: 'relative',
+    aspectRatio: 1,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stockBadge: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  stockText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  stockTextGreen: {
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
+  stockTextRed: {
+    backgroundColor: '#fef2f2',
+    color: '#dc2626',
+  },
+  detailsContainer: {
+    padding: 12,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  category: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  priceRatingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#7c3aed',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rating: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#374151',
+    marginLeft: 2,
+  },
+  bottomContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  sellerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  sellerAvatar: {
+    width: 24,
+    height: 24,
+    backgroundColor: '#7c3aed',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  sellerAvatarText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  sellerName: {
+    fontSize: 12,
+    color: '#374151',
+    flex: 1,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  chatButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eff6ff',
+    borderRadius: 14,
+  },
+  cartButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#7c3aed',
+    borderRadius: 14,
+  },
+  cartButtonDisabled: {
+    opacity: 0.5,
+  },
+});
 
 export default MobileProductCard;
