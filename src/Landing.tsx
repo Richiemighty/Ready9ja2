@@ -40,8 +40,8 @@ const Landing = () => {
         >
           <FaStore className="text-7xl text-yellow-400 drop-shadow-xl" />
           <h1 className="text-5xl font-extrabold">
-            <span className="text-white">Ready</span>
-            <span className="text-yellow-400">9ja</span>
+            <span className="text-white">Awa</span>
+            <span className="text-yellow-400">Buy</span>
           </h1>
           <p className="text-sm font-light tracking-wide text-gray-200">
             Your Trusted Marketplace
@@ -55,7 +55,7 @@ const Landing = () => {
           className="bg-white text-gray-800 p-10 rounded-3xl shadow-2xl w-full max-w-sm"
         >
           <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
-            Welcome to Ready9ja
+            Welcome to AwaBuy
           </h2>
 
           <div className="space-y-4">
@@ -75,7 +75,7 @@ const Landing = () => {
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Powered by <span className="font-semibold text-purple-700">Ready9ja</span>
+            Powered by <span className="font-semibold text-purple-700">Antique Intelligence</span>
           </p>
         </motion.div>
       )}

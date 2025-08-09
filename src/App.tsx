@@ -52,7 +52,11 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-md mx-auto relative">
+    <div className="min-h-screen bg-gray-50 w-full">
+            {/* Desktop container */}
+      <div className="mx-auto w-full max-w-7xl px-0 sm:px-0 lg:px-0">
+
+    {/* <div className="min-h-screen bg-gray-50 max-w-md mx-auto relative"> */}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
@@ -178,9 +182,13 @@ const AppContent: React.FC = () => {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </div>
 
-      {/* ✅ Bottom Navigation for signed-in users */}
-      {currentUser && <MobileBottomNav />}
+      {/* Mobile bottom nav - only show on mobile */}
+      <div className="lg:hidden">
+        {currentUser && <MobileBottomNav />}
+      </div>
+      
     </div>
   );
 };

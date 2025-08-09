@@ -1,10 +1,10 @@
-// src/components/Auth/MobileAuthForm.tsx
+// src/components/Auth/AuthForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Store, Shield, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
-const MobileAuthForm: React.FC = () => {
+const AuthForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get('mode') || 'signin';
   const redirect = searchParams.get('redirect') || '/dashboard';
@@ -75,31 +75,32 @@ const MobileAuthForm: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="flex items-center p-4">
-          <button
-            onClick={() => navigate('/')}
-            className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900 ml-2">
-            {isSignIn ? 'Welcome back' : 'Create Account'}
-          </h1>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 md:p-8 pb-20">
+      {/* Container for better responsiveness */}
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-40 md:rounded-t-lg">
+          <div className="flex items-center p-4">
+            <button
+              onClick={() => navigate('/')}
+              className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-semibold text-gray-900 ml-2">
+              {isSignIn ? 'Welcome back' : 'Create Account'}
+            </h1>
+          </div>
         </div>
-      </div>
 
-      {/* Form */}
-      <div className="p-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        {/* Form */}
+        <div className="bg-white rounded-b-xl shadow-sm border border-gray-100 p-6 md:border-t-0">
           {/* Logo */}
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Store className="w-8 h-8 text-white" />
             </div>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm md:text-base">
               {isSignIn
                 ? 'Sign in to your account'
                 : 'Join thousands of users on Ready9ja'}
@@ -112,10 +113,10 @@ const MobileAuthForm: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
@@ -125,14 +126,14 @@ const MobileAuthForm: React.FC = () => {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter your email"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -144,7 +145,7 @@ const MobileAuthForm: React.FC = () => {
                   minLength={6}
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-12"
+                  className="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-12"
                   placeholder="Enter your password"
                 />
                 <button
@@ -162,7 +163,7 @@ const MobileAuthForm: React.FC = () => {
               <>
                 {/* Full Name */}
                 <div>
-                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="displayName" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
                     Full Name
                   </label>
                   <input
@@ -172,19 +173,19 @@ const MobileAuthForm: React.FC = () => {
                     required
                     value={formData.displayName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="Enter your full name"
                   />
                 </div>
 
                 {/* Role */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Account Type</label>
-                  <div className="space-y-3">
+                  <label className="block text-sm md:text-base font-medium text-gray-700 mb-3">Account Type</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {roles.map((role) => (
                       <label
                         key={role.value}
-                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition ${
+                        className={`flex flex-col p-4 border rounded-xl cursor-pointer transition ${
                           formData.role === role.value
                             ? 'border-purple-500 bg-purple-50'
                             : 'border-gray-300 hover:border-purple-300'
@@ -199,20 +200,20 @@ const MobileAuthForm: React.FC = () => {
                           className="sr-only"
                           required
                         />
-                        <role.icon
-                          className={`w-5 h-5 mr-3 ${
-                            formData.role === role.value ? 'text-purple-600' : 'text-gray-400'
-                          }`}
-                        />
-                        <div>
-                          <div className={`font-medium text-sm ${
+                        <div className="flex items-center mb-2">
+                          <role.icon
+                            className={`w-5 h-5 mr-3 ${
+                              formData.role === role.value ? 'text-purple-600' : 'text-gray-400'
+                            }`}
+                          />
+                          <div className={`font-medium text-sm md:text-base ${
                             formData.role === role.value ? 'text-purple-900' : 'text-gray-900'
                           }`}>
                             {role.label}
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {role.description}
-                          </div>
+                        </div>
+                        <div className="text-xs md:text-sm text-gray-500">
+                          {role.description}
                         </div>
                       </label>
                     ))}
@@ -221,7 +222,7 @@ const MobileAuthForm: React.FC = () => {
 
                 {/* Phone */}
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phoneNumber" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <input
@@ -230,7 +231,7 @@ const MobileAuthForm: React.FC = () => {
                     type="tel"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -238,7 +239,7 @@ const MobileAuthForm: React.FC = () => {
                 {/* Business Name (only for sellers) */}
                 {formData.role === 'seller' && (
                   <div>
-                    <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="businessName" className="block text-sm md:text-base font-medium text-gray-700 mb-2">
                       Business Name
                     </label>
                     <input
@@ -247,7 +248,7 @@ const MobileAuthForm: React.FC = () => {
                       type="text"
                       value={formData.businessName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       placeholder="Enter your business name"
                       required={formData.role === 'seller'}
                     />
@@ -260,7 +261,7 @@ const MobileAuthForm: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 transition"
+              className="w-full flex justify-center py-3 md:py-3.5 px-4 rounded-xl text-sm md:text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 transition"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -276,7 +277,7 @@ const MobileAuthForm: React.FC = () => {
                 setIsSignIn(!isSignIn);
                 setError('');
               }}
-              className="text-sm text-purple-600 hover:text-purple-800 transition"
+              className="text-sm md:text-base text-purple-600 hover:text-purple-800 transition"
             >
               {isSignIn
                 ? "Don't have an account? Sign up"
@@ -289,4 +290,4 @@ const MobileAuthForm: React.FC = () => {
   );
 };
 
-export default MobileAuthForm;
+export default AuthForm;
