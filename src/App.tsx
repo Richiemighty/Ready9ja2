@@ -185,7 +185,7 @@ const AppContent: React.FC = () => {
     </div>
 
       {/* Mobile bottom nav - only show on mobile */}
-      <div className="lg:hidden">
+      <div className="">
         {currentUser && <MobileBottomNav />}
       </div>
       

@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaStore } from "react-icons/fa";
 import { useAuth } from "./contexts/AuthContext"; // import auth context
+import ready from './assets/ready.png';
+
 
 const Landing = () => {
   const [showLogin, setShowLogin] = useState(false);
@@ -38,10 +40,17 @@ const Landing = () => {
           transition={{ duration: 2 }}
           className="flex flex-col items-center space-y-5 text-center"
         >
-          <FaStore className="text-7xl text-yellow-400 drop-shadow-xl" />
+          {/* <FaStore className="text-7xl text-yellow-400 drop-shadow-xl" /> */}
+
+          <img 
+            src={ready}
+            alt="Ready9ja Logo" 
+            className="w-24 h-24 drop-shadow-xl"
+          />
+
           <h1 className="text-5xl font-extrabold">
-            <span className="text-white">Awa</span>
-            <span className="text-yellow-400">Buy</span>
+            <span className="text-white">Ready</span>
+            <span className="text-yellow-400">9ja</span>
           </h1>
           <p className="text-sm font-light tracking-wide text-gray-200">
             Your Trusted Marketplace
@@ -55,7 +64,7 @@ const Landing = () => {
           className="bg-white text-gray-800 p-10 rounded-3xl shadow-2xl w-full max-w-sm"
         >
           <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
-            Welcome to AwaBuy
+            Welcome to Ready9ja
           </h2>
 
           <div className="space-y-4">
