@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // import this
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { FaStore } from "react-icons/fa";
+// import { FaStore } from "react-icons/fa";
 import { useAuth } from "./contexts/AuthContext"; // import auth context
 import ready from './assets/ready.png';
 
